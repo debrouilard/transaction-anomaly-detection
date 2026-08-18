@@ -1,0 +1,103 @@
+# =============================================================================
+# Transaction Anomaly Detection — Model Configuration
+# =============================================================================
+# Hyperparameters for every anomaly-detection model. `contamination` is our
+# best estimate of the anomaly rate in the data and is used consistently
+# across models so comparisons are fair. It is estimated from domain
+# knowledge of card-fraud base rates (~0.1%-2%), NOT from the "Is Fraud?"
+# label — the label is reserved for post-hoc evaluation only.
+# =============================================================================
+
+shared:
+  contamination: 0.02          # assumed anomaly proportion, used by IF / LOF / OCSVM / EE
+  random_state: 42
+  n_jobs: -1
+
+isolation_forest:
+  enabled: true
+  n_estimators: 200
+  max_samples: "auto"
+  max_features: 1.0
+  contamination: 0.02
+  bootstrap: false
+  random_state: 42
+  n_jobs: -1
+  hyperparameter_search:
+    enabled: true
+    param_grid:
+      n_estimators: [100, 200, 300]
+      max_samples: ["auto", 0.5, 0.8]
+      max_features: [0.5, 0.8, 1.0]
+    n_iter: 10
+    scoring: "roc_auc"          # evaluated against held-out fraud labels, never used to fit the model
+
+local_outlier_factor:
+  enabled: false
+  n_neighbors: 35
+  algorithm: "auto"
+  leaf_size: 30
+  metric: "minkowski"
+  p: 2
+  contamination: 0.02
+  novelty: true                 # novelty=True enables .predict() on unseen data for the serving pipeline
+  n_jobs: -1
+  hyperparameter_search:
+    enabled: true
+    param_grid:
+      n_neighbors: [10, 20, 35, 50]
+      leaf_size: [20, 30, 40]
+    n_iter: 8
+    scoring: "roc_auc"
+
+one_class_svm:
+  enabled: false
+  kernel: "rbf"
+  gamma: "scale"
+  nu: 0.02                      # ~ upper bound on training-error / anomaly fraction
+  tol: 0.001
+  max_iter: -1
+  # OCSVM with an RBF kernel is O(n^2)-O(n^3); we subsample the training set
+  # for tractability and document this trade-off explicitly in the report.
+  train_subsample_size: 40000
+  hyperparameter_search:
+    enabled: true
+    param_grid:
+      nu: [0.01, 0.02, 0.05]
+      gamma: ["scale", "auto", 0.01, 0.1]
+    n_iter: 8
+    scoring: "roc_auc"
+
+autoencoder:
+  enabled: true
+  architecture:
+    encoder_layers: [64, 32, 16, 8]
+    decoder_layers: [16, 32, 64]
+    activation: "relu"
+    dropout: 0.1
+    batch_norm: true
+  training:
+    epochs: 60
+    batch_size: 512
+    learning_rate: 0.001
+    weight_decay: 0.00001
+    optimizer: "adam"
+    early_stopping_patience: 8
+    early_stopping_min_delta: 0.0001
+    validation_split: 0.1
+    device: "auto"               # auto | cpu | cuda
+  anomaly_threshold:
+    method: "percentile"         # percentile | contamination
+    percentile: 98                # top 2% reconstruction error flagged as anomalous
+  random_state: 42
+
+elliptic_envelope:
+  contamination: 0.02
+  support_fraction: 0.8
+  random_state: 42
+  enabled: false                  # optional 5th model; set true to include in training run
+
+evaluation:
+  primary_metric: "roc_auc"
+  secondary_metrics: ["average_precision", "precision_at_k", "recall_at_k", "f1"]
+  k_values: [50, 100, 500]        # for precision@k / recall@k on ranked anomaly scores
+  cv_folds: 3

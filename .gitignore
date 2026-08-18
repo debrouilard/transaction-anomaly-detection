@@ -1,0 +1,74 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# --- Data (raw/interim data is not versioned; keep folder structure via .gitkeep) ---
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/engineered/*
+!data/engineered/.gitkeep
+data/prediction/*
+!data/prediction/.gitkeep
+
+# --- Models (large binary artifacts are not versioned by default) ---
+models/*.pt
+models/*.pkl
+models/*.joblib
+!models/.gitkeep
+
+# --- Logs & reports generated at runtime ---
+logs/
+*.log
+reports/metrics.json
+reports/*.png
+mlruns/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Testing / coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Environment variables ---
+.env

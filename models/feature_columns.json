@@ -1,0 +1,25 @@
+{
+  "feature_columns": [
+    "Use Chip_freq",
+    "Merchant City_freq",
+    "Merchant State_freq",
+    "MCC_freq",
+    "Errors?_freq",
+    "Merchant Name_freq",
+    "customer_avg_amount_scaled",
+    "customer_max_amount_scaled",
+    "customer_txn_count_scaled",
+    "merchant_txn_frequency_scaled",
+    "avg_daily_spending_scaled",
+    "weekend_indicator_scaled",
+    "business_hour_indicator_scaled",
+    "time_since_prev_txn_scaled",
+    "rolling_avg_amount_scaled",
+    "transaction_velocity_scaled",
+    "merchant_diversity_scaled",
+    "customer_activity_frequency_scaled",
+    "amount_deviation_from_customer_mean_scaled",
+    "amount_zscore_by_merchant_scaled",
+    "Amount_scaled"
+  ]
+}
