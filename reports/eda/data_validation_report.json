@@ -1,0 +1,34 @@
+{
+  "n_rows": 1259999,
+  "n_cols": 15,
+  "missing_columns": [],
+  "unexpected_dtypes": {},
+  "missing_values": {
+    "Merchant State": 173025,
+    "Zip": 182366,
+    "Errors?": 1238687
+  },
+  "missing_value_pct": {
+    "Merchant State": 13.732,
+    "Zip": 14.474,
+    "Errors?": 98.309
+  },
+  "n_duplicate_rows": 0,
+  "cardinality": {
+    "Merchant Name": 13746,
+    "Use Chip": 3,
+    "Merchant City": 6129,
+    "Merchant State": 130,
+    "MCC": 109,
+    "Errors?": 19,
+    "User": 100,
+    "Card": 9
+  },
+  "range_violations": {
+    "Amount": 63775
+  },
+  "inconsistent_value_notes": [
+    "63775 rows have negative 'Amount' (possible refunds/reversals; reviewed rather than dropped, see preprocessing)."
+  ],
+  "is_valid": true
+}

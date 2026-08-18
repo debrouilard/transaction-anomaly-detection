@@ -1,0 +1,126 @@
+# =============================================================================
+# Transaction Anomaly Detection — Main Configuration
+# =============================================================================
+# This file centralizes every path and parameter used across the pipeline so
+# that no script contains hard-coded values. All paths are resolved relative
+# to the project root at runtime (see src/utils/config.py).
+# =============================================================================
+
+project:
+  name: "transaction-anomaly-detection"
+  random_seed: 42
+
+# -----------------------------------------------------------------------------
+# Paths
+# -----------------------------------------------------------------------------
+paths:
+  raw_data: "data/raw/credit_card_transactions.csv"
+  processed_data: "data/processed/transactions_processed.parquet"
+  engineered_data: "data/engineered/transactions_engineered.parquet"
+  prediction_dir: "data/prediction"
+  models_dir: "models"
+  reports_dir: "reports"
+  logs_dir: "logs"
+  scaler_path: "models/scaler.pkl"
+  encoders_path: "models/encoders.pkl"
+  feature_list_path: "models/feature_columns.json"
+  metrics_path: "reports/metrics.json"
+  eda_report_dir: "reports/eda"
+
+# -----------------------------------------------------------------------------
+# Raw dataset schema (IBM / Kaggle "credit-card-transactions" dataset,
+# ealtman2019 — https://www.kaggle.com/datasets/ealtman2019/credit-card-transactions)
+# -----------------------------------------------------------------------------
+data_schema:
+  raw_columns:
+    - "User"
+    - "Card"
+    - "Year"
+    - "Month"
+    - "Day"
+    - "Time"
+    - "Amount"
+    - "Use Chip"
+    - "Merchant Name"
+    - "Merchant City"
+    - "Merchant State"
+    - "Zip"
+    - "MCC"
+    - "Errors?"
+    - "Is Fraud?"
+  id_columns: ["User", "Card"]
+  amount_column: "Amount"
+  timestamp_parts: ["Year", "Month", "Day", "Time"]
+  categorical_columns: ["Use Chip", "Merchant City", "Merchant State", "MCC", "Errors?"]
+  merchant_column: "Merchant Name"
+  label_column: "Is Fraud?"          # Held out — used ONLY for post-hoc evaluation, never for training/features.
+  label_positive_value: "Yes"
+
+# -----------------------------------------------------------------------------
+# Data loading
+# -----------------------------------------------------------------------------
+data_loading:
+  # The full raw dataset has ~24M rows. sample_frac lets the pipeline run
+  # end-to-end on commodity hardware while remaining reproducible
+  # (stratified by User so behavioral/rolling features stay coherent).
+  # Set to 1.0 (or null) to use the full dataset.
+  sample_frac: 0.05
+  chunksize: 500000
+  min_transactions_per_user: 5    # users with fewer are dropped (too few for behavioral features)
+
+# -----------------------------------------------------------------------------
+# Preprocessing
+# -----------------------------------------------------------------------------
+preprocessing:
+  missing_value_strategy:
+    numeric: "median"
+    categorical: "constant"        # filled with "UNKNOWN"
+  duplicate_subset: null            # null = consider all columns
+  amount_outlier_clip_quantiles: [0.001, 0.999]   # winsorize extreme raw amounts before scaling
+  categorical_encoding: "frequency"  # frequency-encoding keeps cardinality manageable (Merchant Name/City have 10k+ levels)
+  scaler: "standard"                 # standard | robust | minmax
+  test_size: 0.2
+  validation_size: 0.1
+
+# -----------------------------------------------------------------------------
+# Feature engineering
+# -----------------------------------------------------------------------------
+feature_engineering:
+  rolling_window: 5                  # transactions, per-user rolling average
+  velocity_window_hours: 1
+  business_hours: [9, 17]
+  weekend_days: [5, 6]                # Saturday, Sunday (Python weekday())
+  features_to_build:
+    - "customer_avg_amount"
+    - "customer_max_amount"
+    - "customer_txn_count"
+    - "merchant_txn_frequency"
+    - "avg_daily_spending"
+    - "weekend_indicator"
+    - "business_hour_indicator"
+    - "time_since_prev_txn"
+    - "rolling_avg_amount"
+    - "transaction_velocity"
+    - "merchant_diversity"
+    - "customer_activity_frequency"
+    - "amount_deviation_from_customer_mean"
+    - "amount_zscore_by_merchant"
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  log_to_file: true
+  log_filename: "pipeline.log"
+  max_bytes: 5242880          # 5 MB
+  backup_count: 3
+
+# -----------------------------------------------------------------------------
+# Dashboard
+# -----------------------------------------------------------------------------
+dashboard:
+  app_title: "Transaction Anomaly Detection Dashboard"
+  page_icon: "💳"
+  default_model: "isolation_forest"
+  max_upload_rows: 200000

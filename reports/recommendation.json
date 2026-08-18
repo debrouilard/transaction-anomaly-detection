@@ -1,0 +1,10 @@
+{
+  "recommended_model": "autoencoder",
+  "primary_metric": "roc_auc",
+  "primary_metric_value": 0.49557979265530006,
+  "candidates_within_2pct_of_best": [
+    "isolation_forest",
+    "autoencoder"
+  ],
+  "reason": "'autoencoder' is within 2 percentage points of the best roc_auc (0.4956) among all evaluated models and has the lowest prediction latency among that group, making it the best fit for near-real-time transaction scoring."
+}
